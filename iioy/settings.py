@@ -29,6 +29,7 @@ INSTALLED_APPS = [
 
     # third party
     'django_extensions',
+    'rest_framework',
 
     # local
     'iioy.movies.apps.MoviesConfig',
