@@ -6,12 +6,14 @@ from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
-from iioy.movies.api.serializers import MovieSerializer, SimpleMovieSerializer
+from iioy.movies.api.serializers import (
+    MovieSerializer, SimpleMovieSerializer,
+    SimpleMovieListSerializer, DetailedMovieListSerializer
+)
 from iioy.movies.external.data_sources import TmdbMovieAdapter
 from iioy.movies.external.errors import NoDataFoundError
 from iioy.movies.external.movies import MovieInterface
-from iioy.movies.models import Movie
-
+from iioy.movies.models import Movie, MovieList
 
 logger = logging.getLogger(__name__)
 
@@ -62,3 +64,17 @@ class MovieSearchApi(APIView):
         interface = MovieViewInterface(query=query)
         serializer = SimpleMovieSerializer(interface.search(), many=True)
         return response.Response(data=serializer.data)
+
+
+class MovieListViewSet(
+    GenericViewSet,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin
+):
+    permission_classes = (AllowAny,)
+    queryset = MovieList.objects.all().order_by('name')
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return DetailedMovieListSerializer
+        return SimpleMovieListSerializer

@@ -5,6 +5,7 @@ from iioy.movies.api import api_views
 
 router = SimpleRouter()
 router.register('movies', api_views.MovieViewSet)
+router.register('lists', api_views.MovieListViewSet)
 
 urlpatterns = [
     path('movies/search/',

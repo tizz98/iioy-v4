@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from iioy.movies.models import Movie, Genre
+from iioy.movies.models import Movie, Genre, MovieList
 from iioy.movies.models.movie_rating import MovieRating
 
 
@@ -67,5 +67,27 @@ class MovieSerializer(serializers.ModelSerializer):
             'ratings',
             'genres',
             'similar_movies',
+        )
+        fields = read_only_fields
+
+
+class SimpleMovieListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MovieList
+        read_only_fields = (
+            'id',
+            'source',
+            'name',
+            'slug',
+        )
+        fields = read_only_fields
+
+
+class DetailedMovieListSerializer(SimpleMovieListSerializer):
+    movies = SimpleMovieSerializer(many=True)
+
+    class Meta(SimpleMovieListSerializer.Meta):
+        read_only_fields = SimpleMovieListSerializer.Meta.read_only_fields + (
+            'movies',
         )
         fields = read_only_fields
