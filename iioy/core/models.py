@@ -18,7 +18,7 @@ class BaseTmdbModel(TimeStampedModel):
         for field in self.get_field_names() - {'id', 'pk'}:
             other_value = getattr(other, field)
 
-            if other_value is not None:
+            if other_value:
                 setattr(self, field, other_value)
 
         self.save()

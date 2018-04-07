@@ -8,41 +8,36 @@ from iioy.movies.external.data_sources.base import BaseAdapter
 logger = logging.getLogger(__name__)
 
 
-class InterfaceMeta(abc.ABCMeta):
-    def __new__(cls, name, bases, attributes):
-        new_cls = super().__new__(cls, name, bases, attributes)
-
-        methods = []
-
-        for attr in attributes:
-            method = getattr(new_cls, attr, None)
-
-            if isinstance(method, InterfaceMethod):
-                methods.append(attr)
-
-        setattr(new_cls, '_methods', methods)
-        return new_cls
-
-
 class InterfaceMethod(abc.ABC):
-    def __init__(self):
-        self.instance = None
-        self.attname = None
+    def __init__(self, instance=None, attname=None):
+        self.instance = instance
+        self.attname = attname
 
     @abc.abstractmethod
     def __call__(self, *args, **kwargs):
         pass
 
     def bind(self, instance: 'BaseInterface', attname: str):
-        self.instance = instance
-        self.attname = attname
+        return self.__class__(instance, attname)
 
 
-class BaseInterface(metaclass=InterfaceMeta):
+class BaseInterface:
     def __init__(self):
         for attr in self._methods:
             method = getattr(self, attr)
-            method.bind(self, attr)
+            setattr(self, attr, method.bind(self, attr))
+
+    @property
+    def _methods(self):
+        methods = []
+
+        for attr in set(dir(self)) - {'_methods'}:
+            method = getattr(self, attr)
+
+            if isinstance(method, InterfaceMethod):
+                methods.append(attr)
+
+        return methods
 
 
 class AdapterInterface(BaseInterface):
@@ -58,11 +53,21 @@ class AdapterInterface(BaseInterface):
 
 
 class AdapterMethod(InterfaceMethod):
-    def __init__(self, default=None):
-        super().__init__()
+    def __init__(self, instance=None, attname=None, default=None):
+        super().__init__(instance, attname)
 
-        self.default = default
+        self._default = default
         self.adapter = None
+
+    @property
+    def default(self):
+        if callable(self._default):
+            return self._default()
+        return self._default
+
+    @default.setter
+    def default(self, value):
+        self._default = value
 
     def __call__(self, *args, **kwargs):
         try:
@@ -77,5 +82,7 @@ class AdapterMethod(InterfaceMethod):
             return self.default
 
     def bind(self, instance: 'AdapterInterface', attname: str):
-        super().bind(instance, attname)
-        self.adapter = self.instance.adapter
+        new = super().bind(instance, attname)
+        new.adapter = new.instance.adapter
+        new.default = self._default
+        return new

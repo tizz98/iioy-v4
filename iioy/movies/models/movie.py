@@ -31,9 +31,6 @@ class Movie(BaseTmdbModel):
 
     trailer_url = models.URLField(null=True)
 
-    critics_rating = models.TextField(null=True)
-    audience_rating = models.TextField(null=True)
-
     genres = models.ManyToManyField(
         to='movies.Genre',
         related_name='movies',

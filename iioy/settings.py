@@ -116,3 +116,5 @@ STATIC_URL = '/static/'
 
 # External keys
 TMDB_API_KEY = env('TMDB_API_KEY')
+OMDB_API_KEY = env('OMDB_API_KEY')
+

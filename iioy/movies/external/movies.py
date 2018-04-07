@@ -4,6 +4,7 @@ from iioy.core.adapters import BaseAdapter
 from iioy.core.interfaces import AdapterInterface, AdapterMethod
 from iioy.movies.external.errors import NoDataFoundError
 from iioy.movies.models import Movie, Genre
+from iioy.movies.models.movie_rating import MovieRating
 
 
 class MovieInterface(AdapterInterface):
@@ -16,13 +17,14 @@ class MovieInterface(AdapterInterface):
     >>> print(movie.get_title())
     >>> movie.save()
     """
-    def __init__(self, adapter_cls: Type[BaseAdapter], external_id):
-        self.external_id = external_id
+    def __init__(self, adapter_cls: Type[BaseAdapter], *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
 
         super().__init__(adapter_cls)
 
     def get_adapter(self):
-        return self.adapter_cls(self.external_id)
+        return self.adapter_cls(*self.args, **self.kwargs)
 
     get_title = AdapterMethod()
     get_original_title = AdapterMethod()
@@ -41,16 +43,16 @@ class MovieInterface(AdapterInterface):
     get_poster_url = AdapterMethod()
     get_mobile_poster_url = AdapterMethod()
     get_trailer_url = AdapterMethod()
-    get_critics_rating = AdapterMethod()
-    get_audience_rating = AdapterMethod()
-    get_genres = AdapterMethod()
-    get_similar_movies = AdapterMethod()
+    get_ratings = AdapterMethod(default=list)
+    get_genres = AdapterMethod(default=list)
+    get_similar_movies = AdapterMethod(default=list)
 
     def save(self):
         movie = Movie.objects.update_or_create(**self.get_movie_data())
 
         self.__set_genres(movie)
         self.__set_similar_movies(movie)
+        self.__set_ratings(movie)
 
         return movie
 
@@ -76,8 +78,6 @@ class MovieInterface(AdapterInterface):
             poster_url=self.get_poster_url(),
             mobile_poster_url=self.get_mobile_poster_url(),
             trailer_url=self.get_trailer_url(),
-            critics_rating=self.get_critics_rating(),
-            audience_rating=self.get_audience_rating(),
         )
 
         new_data = {}
@@ -99,7 +99,8 @@ class MovieInterface(AdapterInterface):
                 name=genre_data.name,
             ))
 
-        movie.genres.set(genres, clear=True)
+        if genres:
+            movie.genres.set(genres, clear=True)
 
     def __set_similar_movies(self, movie: 'Movie'):
         similar = []
@@ -113,4 +114,21 @@ class MovieInterface(AdapterInterface):
                 release_date=movie_data.release_date,
             ))
 
-        movie.similar_movies.set(similar, clear=True)
+        if similar:
+            movie.similar_movies.set(similar, clear=True)
+
+    def __set_ratings(self, movie: 'Movie'):
+        ratings = list(self.get_ratings())
+
+        if ratings:
+            movie.ratings.all().delete()
+
+            new_ratings = []
+            for rating in ratings:
+                new_ratings.append(MovieRating(
+                    movie=movie,
+                    source=rating.source,
+                    value=rating.value,
+                ))
+
+            MovieRating.objects.bulk_create(new_ratings)

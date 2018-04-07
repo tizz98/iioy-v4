@@ -6,9 +6,7 @@ from dateutil.parser import parse
 
 class BaseAdapter(abc.ABC):
     class AdapterMethodError(Exception):
-        def __init__(self, message: str, adapter: 'BaseAdapter'):
-            super().__init__(message)
-            self.adapter = adapter
+        pass
 
     @staticmethod
     def parse_date(date):
@@ -19,6 +17,14 @@ class BaseAdapter(abc.ABC):
     @staticmethod
     def get_youtube_url(key):
         return f'https://youtube.com/embed/{key}'
+
+
+class UnImplementableMethod:
+    def __init__(self, message):
+        self.message = message
+
+    def __call__(self, *args, **kwargs):
+        raise BaseAdapter.AdapterMethodError(self.message)
 
 
 class SmartTuple:

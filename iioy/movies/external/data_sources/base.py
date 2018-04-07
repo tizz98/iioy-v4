@@ -26,6 +26,11 @@ ListMovie = SmartTuple('ListMovie', [
     'title',
     'original_title',
 ])
+MovieRating = SmartTuple('MovieRating', [
+    'tmdb_id',
+    'source',
+    'value',
+])
 
 
 class BaseMovieAdapter(BaseAdapter):
@@ -98,11 +103,7 @@ class BaseMovieAdapter(BaseAdapter):
         pass
 
     @abc.abstractmethod
-    def get_critics_rating(self):
-        pass
-
-    @abc.abstractmethod
-    def get_audience_rating(self):
+    def get_ratings(self):
         pass
 
     @abc.abstractmethod

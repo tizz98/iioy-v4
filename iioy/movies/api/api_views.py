@@ -15,6 +15,24 @@ from iioy.movies.models import Movie
 logger = logging.getLogger(__name__)
 
 
+class MovieViewInterface:
+    def __init__(self, tmdb_id):
+        self.tmdb_id = tmdb_id
+
+    def get_movie(self):
+        try:
+            return Movie.objects.get(tmdb_id=self.tmdb_id)
+        except Movie.DoesNotExist:
+            movie = MovieInterface(TmdbMovieAdapter, self.tmdb_id)
+
+            try:
+                return movie.save()
+            except NoDataFoundError as err:
+                logger.exception(f'Error finding {self.tmdb_id}',
+                                 exc_info=err)
+                raise Http404(f'Cannot find {self.tmdb_id}')
+
+
 class MovieViewSet(GenericViewSet, mixins.RetrieveModelMixin):
     permission_classes = (AllowAny,)
     serializer_class = MovieSerializer
@@ -22,15 +40,5 @@ class MovieViewSet(GenericViewSet, mixins.RetrieveModelMixin):
     lookup_field = 'tmdb_id'
 
     def get_object(self):
-        try:
-            return super().get_object()
-        except Http404 as e:
-            tmdb_id = self.kwargs[self.lookup_field]
-            movie = MovieInterface(TmdbMovieAdapter, tmdb_id)
-
-            try:
-                return movie.save()
-            except NoDataFoundError as err:
-                logger.exception(f'Error finding {tmdb_id}',
-                                 exc_info=err)
-                raise e
+        interface = MovieViewInterface(self.kwargs[self.lookup_field])
+        return interface.get_movie()

@@ -3,6 +3,7 @@ from urllib.parse import urljoin
 
 import tmdbsimple as tmdb
 
+from iioy.core.adapters import UnImplementableMethod
 from iioy.movies.external.data_sources.base import (
     BaseMovieAdapter, Genre, SimilarMovie,
     CastMember,
@@ -73,11 +74,7 @@ class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
     def get_runtime(self):
         return self.data['runtime']
 
-    def get_mpaa_rating(self):
-        raise self.AdapterMethodError(
-            message='TMDB does not provide MPAA ratings.',
-            adapter=self,
-        )
+    get_mpaa_rating = UnImplementableMethod('TMDB does not provide MPAA ratings.')  # noqa: E501
 
     def get_release_date(self):
         return self.parse_date(self.data['release_date'])
@@ -105,17 +102,9 @@ class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
             return self.get_youtube_url(trailer['key'])
         return None
 
-    def get_critics_rating(self):
-        raise self.AdapterMethodError(
-            message='This method is deprecated for TMDB, use Rotten tomatoes.',
-            adapter=self,
-        )
-
-    def get_audience_rating(self):
-        raise self.AdapterMethodError(
-            message='This method is deprecated for TMDB, use Rotten tomatoes.',
-            adapter=self,
-        )
+    get_ratings = UnImplementableMethod(
+        'This method is deprecated for TMDB, '
+        'use Rotten tomatoes or OMDB.')
 
     def get_genres(self):
         return map(Genre, self.data['genres'])
