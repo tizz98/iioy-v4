@@ -57,3 +57,4 @@ class OmdbMovieAdapter(BaseMovieAdapter):
 
     get_genres = UnImplementableMethod('Not used from OMDB.')
     get_similar_movies = UnImplementableMethod('Not used from OMDB.')
+    search = UnImplementableMethod('Not used from OMDB.')

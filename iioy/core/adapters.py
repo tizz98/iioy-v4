@@ -10,7 +10,7 @@ class BaseAdapter(abc.ABC):
 
     @staticmethod
     def parse_date(date):
-        if date is None:
+        if not date:
             return None
         return parse(date).date()
 

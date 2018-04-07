@@ -7,7 +7,8 @@ from iioy.core.adapters import UnImplementableMethod
 from iioy.movies.external.data_sources.base import (
     BaseMovieAdapter, Genre, SimilarMovie,
     CastMember,
-    BasePersonAdapter, BaseMovieCastAdapter, BaseMovieListAdapter, ListMovie)
+    BasePersonAdapter, BaseMovieCastAdapter, BaseMovieListAdapter, ListMovie,
+    SearchResult)
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,9 @@ class BaseTmdbAdapter:
         return self.__config
 
     def _get_image_url(self, path, size='original'):
+        if not path:
+            return None
+
         base = self.config['images']['secure_base_url']
         full_path = f'{size}/{path}'
         return urljoin(base, full_path)
@@ -112,17 +116,31 @@ class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
     def get_similar_movies(self):
         logger.debug('Making additional request to TMDB for similar movies')
 
-        def make_similar(data):
+        for data in self.tmdb_object.similar_movies()['results'][:10]:
             poster_path = data['poster_path']
-            return SimilarMovie(
+
+            yield SimilarMovie(
                 release_date=self.parse_date(data.pop('release_date')),
                 poster_url=self.__get_poster_url(poster_path),
                 mobile_poster_url=self.__get_mobile_poster_url(poster_path),
                 **data,
             )
+            self._queue_data_retrieval(data['id'])
 
-        similar = self.tmdb_object.similar_movies()
-        return map(make_similar, similar['results'][:10])
+    def search(self, query):
+        search = tmdb.Search()
+
+        for result in search.movie(query=query)['results']:
+            poster_path = result['poster_path']
+
+            yield SearchResult(
+                release_date=self.parse_date(result.pop('release_date')),
+                poster_url=self.__get_poster_url(poster_path),
+                mobile_poster_url=self.__get_mobile_poster_url(poster_path),
+                tmdb_id=result['id'],
+                **result
+            )
+            self._queue_data_retrieval(result['id'])
 
     def __get_poster_url(self, path):
         return self._get_image_url(path, size='w780')

@@ -46,6 +46,7 @@ class MovieInterface(AdapterInterface):
     get_ratings = AdapterMethod(default=list)
     get_genres = AdapterMethod(default=list)
     get_similar_movies = AdapterMethod(default=list)
+    search = AdapterMethod(default=list)
 
     def save(self):
         movie = Movie.objects.update_or_create(**self.get_movie_data())

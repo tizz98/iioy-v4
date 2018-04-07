@@ -1,7 +1,10 @@
 import abc
 from collections import defaultdict
 
+from django.db import transaction
+
 from iioy.core.adapters import SmartTuple, BaseAdapter
+from iioy.movies import tasks
 
 Genre = SmartTuple('Genre', [
     'id',
@@ -30,6 +33,14 @@ MovieRating = SmartTuple('MovieRating', [
     'tmdb_id',
     'source',
     'value',
+])
+SearchResult = SmartTuple('SearchResult', [
+    'tmdb_id',
+    'title',
+    'release_date',
+    'original_title',
+    'poster_url',
+    'mobile_poster_url',
 ])
 
 
@@ -113,6 +124,14 @@ class BaseMovieAdapter(BaseAdapter):
     @abc.abstractmethod
     def get_similar_movies(self):
         pass
+
+    @abc.abstractmethod
+    def search(self, query):
+        pass
+
+    @staticmethod
+    def _queue_data_retrieval(tmdb_id):
+        transaction.on_commit(lambda: tasks.update_movie(tmdb_id))
 
 
 class BasePersonAdapter(BaseAdapter):

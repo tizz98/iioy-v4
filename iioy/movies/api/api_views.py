@@ -1,11 +1,12 @@
 import logging
 
 from django.http import Http404
-from rest_framework import mixins
+from rest_framework import mixins, response
 from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet
 
-from iioy.movies.api.serializers import MovieSerializer
+from iioy.movies.api.serializers import MovieSerializer, SimpleMovieSerializer
 from iioy.movies.external.data_sources import TmdbMovieAdapter
 from iioy.movies.external.errors import NoDataFoundError
 from iioy.movies.external.movies import MovieInterface
@@ -16,21 +17,26 @@ logger = logging.getLogger(__name__)
 
 
 class MovieViewInterface:
-    def __init__(self, tmdb_id):
+    adapter_cls = TmdbMovieAdapter
+
+    def __init__(self, tmdb_id=None, query=None):
         self.tmdb_id = tmdb_id
+        self.query = query
+        self.interface = MovieInterface(self.adapter_cls, self.tmdb_id)
 
     def get_movie(self):
         try:
             return Movie.objects.get(tmdb_id=self.tmdb_id)
         except Movie.DoesNotExist:
-            movie = MovieInterface(TmdbMovieAdapter, self.tmdb_id)
-
             try:
-                return movie.save()
+                return self.interface.save()
             except NoDataFoundError as err:
                 logger.exception(f'Error finding {self.tmdb_id}',
                                  exc_info=err)
                 raise Http404(f'Cannot find {self.tmdb_id}')
+
+    def search(self):
+        return self.interface.search(self.query)
 
 
 class MovieViewSet(GenericViewSet, mixins.RetrieveModelMixin):
@@ -42,3 +48,17 @@ class MovieViewSet(GenericViewSet, mixins.RetrieveModelMixin):
     def get_object(self):
         interface = MovieViewInterface(self.kwargs[self.lookup_field])
         return interface.get_movie()
+
+
+class MovieSearchApi(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, *args, **kwargs):
+        query = self.request.GET.get('q')
+
+        if not query:
+            return response.Response(data=[])
+
+        interface = MovieViewInterface(query=query)
+        serializer = SimpleMovieSerializer(interface.search(), many=True)
+        return response.Response(data=serializer.data)
