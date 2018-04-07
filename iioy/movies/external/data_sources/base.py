@@ -10,7 +10,10 @@ Genre = SmartTuple('Genre', [
 SimilarMovie = SmartTuple('SimilarMovie', [
     'id',
     'title',
+    'release_date',
     'original_title',
+    'poster_url',
+    'mobile_poster_url',
 ])
 CastMember = SmartTuple('CastMember', [
     'id',

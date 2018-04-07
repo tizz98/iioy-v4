@@ -14,7 +14,11 @@ class BaseAdapter(abc.ABC):
     def parse_date(date):
         if date is None:
             return None
-        return parse(date)
+        return parse(date).date()
+
+    @staticmethod
+    def get_youtube_url(key):
+        return f'https://youtube.com/embed/{key}'
 
 
 class SmartTuple:

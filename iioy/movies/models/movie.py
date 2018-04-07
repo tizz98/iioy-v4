@@ -10,26 +10,26 @@ class Movie(BaseTmdbModel):
     slug = SlugField(slug_field='title')
 
     tagline = models.TextField(null=True)
-    budget = models.TextField(null=True)
-    revenue = models.TextField(null=True)
+    budget = models.BigIntegerField(null=True)
+    revenue = models.BigIntegerField(null=True)
 
     homepage = models.URLField(null=True)
 
     imdb_id = models.TextField()
 
     synopsis = models.TextField(null=True)
-    runtime = models.TextField(null=True)
+    runtime = models.IntegerField(null=True)  # in minutes
     mpaa_rating = models.TextField(null=True)
 
     release_date = models.DateField(null=True)
 
-    backdrop_url = models.TextField(null=True)
-    mobile_backdrop_url = models.TextField(null=True)
+    backdrop_url = models.URLField(null=True)
+    mobile_backdrop_url = models.URLField(null=True)
 
-    poster_url = models.TextField(null=True)
-    mobile_poster_url = models.TextField(null=True)
+    poster_url = models.URLField(null=True)
+    mobile_poster_url = models.URLField(null=True)
 
-    trailer_url = models.TextField(null=True)
+    trailer_url = models.URLField(null=True)
 
     critics_rating = models.TextField(null=True)
     audience_rating = models.TextField(null=True)

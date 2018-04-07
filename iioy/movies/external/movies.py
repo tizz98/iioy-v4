@@ -2,6 +2,7 @@ from typing import Type
 
 from iioy.core.adapters import BaseAdapter
 from iioy.core.interfaces import AdapterInterface, AdapterMethod
+from iioy.movies.external.errors import NoDataFoundError
 from iioy.movies.models import Movie, Genre
 
 
@@ -85,6 +86,9 @@ class MovieInterface(AdapterInterface):
             if value is not None:
                 new_data[key] = value
 
+        if not new_data:
+            raise NoDataFoundError('Unable to find data for movie.')
+
         return new_data
 
     def __set_genres(self, movie: 'Movie'):
@@ -104,6 +108,9 @@ class MovieInterface(AdapterInterface):
                 tmdb_id=movie_data.id,
                 title=movie_data.title,
                 original_title=movie_data.original_title,
+                poster_url=movie_data.poster_url,
+                mobile_poster_url=movie_data.mobile_poster_url,
+                release_date=movie_data.release_date,
             ))
 
         movie.similar_movies.set(similar, clear=True)

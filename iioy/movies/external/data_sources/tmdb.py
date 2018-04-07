@@ -89,16 +89,21 @@ class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
         return self._get_image_url(self.data['backdrop_path'], size='w1280')
 
     def get_poster_url(self):
-        return self._get_image_url(self.data['poster_path'], size='w780')
+        return self.__get_poster_url(self.data['poster_path'])
 
     def get_mobile_poster_url(self):
-        return self._get_image_url(self.data['poster_path'], size='w432')
+        return self.__get_mobile_poster_url(self.data['poster_path'])
 
     def get_trailer_url(self):
-        raise self.AdapterMethodError(
-            message='TMDB does not provide trailers.',
-            adapter=self,
-        )
+        logger.debug('Making additional request to TMDB for trailers.')
+
+        trailers = list(filter(lambda t: t['site'].lower() == 'youtube',
+                               self.tmdb_object.videos()['results']))
+
+        if len(trailers) > 0:
+            trailer = trailers[0]
+            return self.get_youtube_url(trailer['key'])
+        return None
 
     def get_critics_rating(self):
         raise self.AdapterMethodError(
@@ -118,8 +123,23 @@ class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
     def get_similar_movies(self):
         logger.debug('Making additional request to TMDB for similar movies')
 
+        def make_similar(data):
+            poster_path = data['poster_path']
+            return SimilarMovie(
+                release_date=self.parse_date(data.pop('release_date')),
+                poster_url=self.__get_poster_url(poster_path),
+                mobile_poster_url=self.__get_mobile_poster_url(poster_path),
+                **data,
+            )
+
         similar = self.tmdb_object.similar_movies()
-        return map(SimilarMovie, similar['results'][:10])
+        return map(make_similar, similar['results'][:10])
+
+    def __get_poster_url(self, path):
+        return self._get_image_url(path, size='w780')
+
+    def __get_mobile_poster_url(self, path):
+        return self._get_image_url(path, size='w432')
 
 
 class TmdbPersonAdapter(BasePersonAdapter, BaseTmdbAdapter):
