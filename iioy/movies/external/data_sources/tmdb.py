@@ -6,7 +6,7 @@ import tmdbsimple as tmdb
 from iioy.movies.external.data_sources.base import (
     BaseMovieAdapter, Genre, SimilarMovie,
     CastMember,
-    BasePersonAdapter, BaseMovieCastAdapter)
+    BasePersonAdapter, BaseMovieCastAdapter, BaseMovieListAdapter, ListMovie)
 
 logger = logging.getLogger(__name__)
 
@@ -168,3 +168,37 @@ class TmdbMovieCastAdapter(BaseMovieCastAdapter):
                 character_name=member['character'],
                 order=member['order'],
             )
+
+
+class TmdbMovieListAdapter(BaseMovieListAdapter):
+    source = 'tmdb'
+    movie_adapter_cls = TmdbMovieAdapter
+    name = None
+    list_func = None
+
+    def get_name(self):
+        return self.name
+
+    def get_movies(self):
+        for movie in getattr(tmdb.Movies(), self.list_func)()['results']:
+            yield ListMovie(**movie)
+
+
+class NowPlayingListAdapter(TmdbMovieListAdapter):
+    list_func = 'now_playing'
+    name = 'Now playing'
+
+
+class PopularListAdapter(TmdbMovieListAdapter):
+    list_func = 'popular'
+    name = 'Popular'
+
+
+class TopRatedListAdapter(TmdbMovieListAdapter):
+    list_func = 'top_rated'
+    name = 'Top rated'
+
+
+class UpcomingListAdapter(TmdbMovieListAdapter):
+    list_func = 'upcoming'
+    name = 'Upcoming'

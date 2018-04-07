@@ -5,6 +5,7 @@ from iioy.core.fields import SlugField
 
 
 class MovieList(TimeStampedModel):
+    source = models.TextField()
     name = models.TextField()
     slug = SlugField(slug_field='name')
 

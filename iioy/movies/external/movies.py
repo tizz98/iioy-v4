@@ -9,7 +9,7 @@ class MovieInterface(AdapterInterface):
     """
     Examples
     --------
-    >>> from iioy.movies.external import MovieInterface
+    >>> from iioy.movies.external.movies import MovieInterface
     >>> from iioy.movies.external.data_sources import TmdbMovieAdapter
     >>> movie = MovieInterface(TmdbMovieAdapter, '354912')
     >>> print(movie.get_title())

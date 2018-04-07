@@ -6,7 +6,7 @@ from iioy.movies.external.people import PersonInterface
 from iioy.movies.models import CastMember, Movie
 
 
-class MoveCastMembersInterface(AdapterInterface):
+class MovieCastMembersInterface(AdapterInterface):
     def __init__(self, adapter_cls: Type[BaseAdapter], external_movie_id):
         self.external_movie_id = external_movie_id
 

@@ -1,4 +1,5 @@
 import abc
+from collections import defaultdict
 
 from iioy.core.adapters import SmartTuple, BaseAdapter
 
@@ -16,6 +17,11 @@ CastMember = SmartTuple('CastMember', [
     'person_id',
     'character_name',
     'order',
+])
+ListMovie = SmartTuple('ListMovie', [
+    'id',
+    'title',
+    'original_title',
 ])
 
 
@@ -148,4 +154,43 @@ class BaseMovieCastAdapter(BaseAdapter):
 
     @abc.abstractmethod
     def get_members(self):
+        pass
+
+
+class ListAdapterMeta(abc.ABCMeta):
+    lists = defaultdict(dict)
+
+    def __new__(cls, name, bases, attributes):
+        new_cls = super().__new__(cls, name, bases, attributes)
+
+        if bases[0] == BaseAdapter:
+            return new_cls
+
+        if new_cls.name is not None:
+            cls.lists[new_cls.source][new_cls.name] = new_cls
+        return new_cls
+
+
+class BaseMovieListAdapter(BaseAdapter, metaclass=ListAdapterMeta):
+    @property
+    @abc.abstractmethod
+    def source(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def name(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def movie_adapter_cls(self):
+        pass
+
+    @abc.abstractmethod
+    def get_name(self):
+        pass
+
+    @abc.abstractmethod
+    def get_movies(self):
         pass

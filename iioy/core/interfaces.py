@@ -68,8 +68,12 @@ class AdapterMethod(InterfaceMethod):
         try:
             return getattr(self.adapter, self.attname)(*args, **kwargs)
         except BaseAdapter.AdapterMethodError as err:
+            logger.debug(f'Error calling method `{self.attname}`',
+                         exc_info=err)
+            return self.default
+        except Exception as e:
             logger.exception(f'Error calling method `{self.attname}`',
-                             exc_info=err)
+                             exc_info=e)
             return self.default
 
     def bind(self, instance: 'AdapterInterface', attname: str):
