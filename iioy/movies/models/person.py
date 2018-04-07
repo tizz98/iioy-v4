@@ -1,11 +1,10 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django_extensions.db.models import TimeStampedModel
+
+from iioy.core.models import BaseTmdbModel
 
 
-class Person(TimeStampedModel):
-    tmdb_id = models.TextField()
-
+class Person(BaseTmdbModel):
     name = models.TextField()
     profile_picture_url = models.URLField()
     biography = models.TextField(null=True)
@@ -20,6 +19,9 @@ class Person(TimeStampedModel):
         models.TextField(),
         default=list,
     )
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         indexes = [

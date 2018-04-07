@@ -1,25 +1,6 @@
 import abc
-from collections import namedtuple
 
-from dateutil.parser import parse
-
-
-class SmartTuple:
-    def __init__(self, *args, **kwargs):
-        self.namedtuple = namedtuple(*args, **kwargs)
-
-    def __call__(self, *args, **kwargs):
-        if len(args) > 0 and isinstance(args[0], dict) and not kwargs:
-            kwargs = args[0]
-
-        new_kwargs = {}
-
-        for k, v in kwargs.items():
-            if k in self.namedtuple._fields:
-                new_kwargs[k] = v
-
-        return self.namedtuple(**new_kwargs)
-
+from iioy.core.adapters import SmartTuple, BaseAdapter
 
 Genre = SmartTuple('Genre', [
     'id',
@@ -30,17 +11,15 @@ SimilarMovie = SmartTuple('SimilarMovie', [
     'title',
     'original_title',
 ])
+CastMember = SmartTuple('CastMember', [
+    'id',
+    'person_id',
+    'character_name',
+    'order',
+])
 
 
-class BaseAdapter(abc.ABC):
-    class AdapterMethodError(Exception):
-        def __init__(self, message: str, adapter: 'BaseAdapter'):
-            super().__init__(message)
-            self.adapter = adapter
-
-    def __init__(self, external_id):
-        self.external_id = external_id
-
+class BaseMovieAdapter(BaseAdapter):
     @abc.abstractmethod
     def get_title(self):
         pass
@@ -125,6 +104,48 @@ class BaseAdapter(abc.ABC):
     def get_similar_movies(self):
         pass
 
-    @staticmethod
-    def parse_date(date):
-        return parse(date)
+
+class BasePersonAdapter(BaseAdapter):
+    @abc.abstractmethod
+    def get_tmdb_id(self):
+        pass
+
+    @abc.abstractmethod
+    def get_name(self):
+        pass
+
+    @abc.abstractmethod
+    def get_profile_picture_url(self):
+        pass
+
+    @abc.abstractmethod
+    def get_biography(self):
+        pass
+
+    @abc.abstractmethod
+    def get_day_of_birth(self):
+        pass
+
+    @abc.abstractmethod
+    def get_day_of_death(self):
+        pass
+
+    @abc.abstractmethod
+    def get_homepage(self):
+        pass
+
+    @abc.abstractmethod
+    def get_birthplace(self):
+        pass
+
+    @abc.abstractmethod
+    def get_aliases(self):
+        pass
+
+
+class BaseMovieCastAdapter(BaseAdapter):
+    person_adapter_cls = None
+
+    @abc.abstractmethod
+    def get_members(self):
+        pass

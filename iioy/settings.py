@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     'django_extensions',
 
     # local
-    'iioy.movies',
+    'iioy.movies.apps.MoviesConfig',
 ]
 
 MIDDLEWARE = [

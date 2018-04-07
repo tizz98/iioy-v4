@@ -1,2 +1,2 @@
 # flake8: noqa
-from .tmdb import TmdbAdapter
+from .tmdb import TmdbMovieAdapter

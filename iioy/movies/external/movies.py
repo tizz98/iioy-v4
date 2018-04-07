@@ -1,93 +1,52 @@
-import logging
 from typing import Type
 
-from iioy.movies.external.data_sources.base import BaseAdapter
+from iioy.core.adapters import BaseAdapter
+from iioy.core.interfaces import AdapterInterface, AdapterMethod
 from iioy.movies.models import Movie, Genre
 
-logger = logging.getLogger(__name__)
 
-
-class MovieMeta(type):
-    def __new__(cls, name, bases, attributes):
-        movie_cls = super().__new__(cls, name, bases, attributes)
-
-        movie_methods = []
-
-        for attr_name in attributes:
-            attr = getattr(movie_cls, attr_name, None)
-
-            if isinstance(attr, MovieMethod):
-                movie_methods.append(attr_name)
-
-        setattr(movie_cls, '_methods', movie_methods)
-        return movie_cls
-
-
-class MovieMethod:
-    def __init__(self, default=None):
-        self.default = default
-
-        self.instance = None
-        self.adapter = None
-        self.attname = None
-
-    def __call__(self, *args, **kwargs):
-        try:
-            return getattr(self.adapter, self.attname)(*args, **kwargs)
-        except BaseAdapter.AdapterMethodError as err:
-            logger.exception(f'Error calling method `{self.attname}`',
-                             exc_info=err)
-            return self.default
-
-    def bind(self, instance: 'MovieInterface', attname: str):
-        self.instance = instance
-        self.adapter = self.instance.adapter
-        self.attname = attname
-
-
-class MovieInterface(metaclass=MovieMeta):
+class MovieInterface(AdapterInterface):
     """
     Examples
     --------
     >>> from iioy.movies.external import MovieInterface
-    >>> from iioy.movies.external.data_sources import TmdbAdapter
-    >>> movie = MovieInterface('354912', TmdbAdapter)
+    >>> from iioy.movies.external.data_sources import TmdbMovieAdapter
+    >>> movie = MovieInterface(TmdbMovieAdapter, '354912')
     >>> print(movie.get_title())
     >>> movie.save()
     """
-    def __init__(self, external_id, adapter_cls: Type[BaseAdapter]):
+    def __init__(self, adapter_cls: Type[BaseAdapter], external_id):
         self.external_id = external_id
-        self.adapter = adapter_cls(self.external_id)
 
-        for attr_name in self._methods:
-            attr = getattr(self, attr_name)
-            attr.bind(self, attr_name)
+        super().__init__(adapter_cls)
 
-    get_title = MovieMethod()
-    get_original_title = MovieMethod()
-    get_tagline = MovieMethod()
-    get_budget = MovieMethod()
-    get_revenue = MovieMethod()
-    get_homepage = MovieMethod()
-    get_imdb_id = MovieMethod()
-    get_tmdb_id = MovieMethod()
-    get_synopsis = MovieMethod()
-    get_runtime = MovieMethod()
-    get_mpaa_rating = MovieMethod()
-    get_release_date = MovieMethod()
-    get_backdrop_url = MovieMethod()
-    get_mobile_backdrop_url = MovieMethod()
-    get_poster_url = MovieMethod()
-    get_mobile_poster_url = MovieMethod()
-    get_trailer_url = MovieMethod()
-    get_critics_rating = MovieMethod()
-    get_audience_rating = MovieMethod()
-    get_genres = MovieMethod()
-    get_similar_movies = MovieMethod()
+    def get_adapter(self):
+        return self.adapter_cls(self.external_id)
+
+    get_title = AdapterMethod()
+    get_original_title = AdapterMethod()
+    get_tagline = AdapterMethod()
+    get_budget = AdapterMethod()
+    get_revenue = AdapterMethod()
+    get_homepage = AdapterMethod()
+    get_imdb_id = AdapterMethod()
+    get_tmdb_id = AdapterMethod()
+    get_synopsis = AdapterMethod()
+    get_runtime = AdapterMethod()
+    get_mpaa_rating = AdapterMethod()
+    get_release_date = AdapterMethod()
+    get_backdrop_url = AdapterMethod()
+    get_mobile_backdrop_url = AdapterMethod()
+    get_poster_url = AdapterMethod()
+    get_mobile_poster_url = AdapterMethod()
+    get_trailer_url = AdapterMethod()
+    get_critics_rating = AdapterMethod()
+    get_audience_rating = AdapterMethod()
+    get_genres = AdapterMethod()
+    get_similar_movies = AdapterMethod()
 
     def save(self):
-        movie = self.build()
-        movie.save()
+        movie = Movie.objects.update_or_create(**self.get_movie_data())
 
         self.__set_genres(movie)
         self.__set_similar_movies(movie)
@@ -95,6 +54,9 @@ class MovieInterface(metaclass=MovieMeta):
         return movie
 
     def build(self):
+        return Movie(**self.get_movie_data())
+
+    def get_movie_data(self):
         data = dict(
             title=self.get_title(),
             original_title=self.get_original_title(),
@@ -123,7 +85,7 @@ class MovieInterface(metaclass=MovieMeta):
             if value is not None:
                 new_data[key] = value
 
-        return Movie.objects.update_or_create(**new_data)
+        return new_data
 
     def __set_genres(self, movie: 'Movie'):
         genres = []

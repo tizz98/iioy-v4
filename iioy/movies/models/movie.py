@@ -1,13 +1,10 @@
-from operator import attrgetter
-
 from django.db import models
-from django_extensions.db.models import TimeStampedModel
 
 from iioy.core.fields import SlugField
-from iioy.core.managers import TmdbManagerFactory
+from iioy.core.models import BaseTmdbModel
 
 
-class Movie(TimeStampedModel):
+class Movie(BaseTmdbModel):
     title = models.TextField()
     original_title = models.TextField()
     slug = SlugField(slug_field='title')
@@ -19,7 +16,6 @@ class Movie(TimeStampedModel):
     homepage = models.URLField(null=True)
 
     imdb_id = models.TextField()
-    tmdb_id = models.TextField()
 
     synopsis = models.TextField(null=True)
     runtime = models.TextField(null=True)
@@ -44,8 +40,6 @@ class Movie(TimeStampedModel):
     )
     similar_movies = models.ManyToManyField(to='self')
 
-    objects = TmdbManagerFactory()
-
     class Meta:
         indexes = [
             models.Index(fields=['tmdb_id']),
@@ -54,15 +48,3 @@ class Movie(TimeStampedModel):
 
     def __str__(self):
         return self.title
-
-    def update(self, other: 'Movie'):
-        for field in self.get_field_names() - {'id', 'pk'}:
-            other_value = getattr(other, field)
-
-            if other_value is not None:
-                setattr(self, field, other_value)
-
-        self.save()
-
-    def get_field_names(self):
-        return set(map(attrgetter('attname'), self._meta.fields))

@@ -3,25 +3,29 @@ from urllib.parse import urljoin
 
 import tmdbsimple as tmdb
 
-from iioy.movies.external.data_sources.base import BaseAdapter, Genre, \
-    SimilarMovie
+from iioy.movies.external.data_sources.base import (
+    BaseMovieAdapter, Genre, SimilarMovie,
+    CastMember,
+    BasePersonAdapter, BaseMovieCastAdapter)
 
 logger = logging.getLogger(__name__)
 
 
-class TmdbAdapter(BaseAdapter):
+class BaseTmdbAdapter:
     __config = {}
 
-    def __init__(self, external_id):
-        super().__init__(external_id)
+    tmdb_class = None
 
-        self.movie = tmdb.Movies(self.external_id)
+    def __init__(self, external_id):
+        self.external_id = external_id
+        self.tmdb_object = self.tmdb_class(self.external_id)
+
         self._data = None
 
     @property
     def data(self):
         if self._data is None:
-            self._data = self.movie.info()
+            self._data = self.tmdb_object.info()
         return self._data
 
     @property
@@ -29,6 +33,15 @@ class TmdbAdapter(BaseAdapter):
         if not self.__config:
             self.__config = tmdb.Configuration().info()
         return self.__config
+
+    def _get_image_url(self, path, size='original'):
+        base = self.config['images']['secure_base_url']
+        full_path = f'{size}/{path}'
+        return urljoin(base, full_path)
+
+
+class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
+    tmdb_class = tmdb.Movies
 
     def get_title(self):
         return self.data['title']
@@ -70,16 +83,16 @@ class TmdbAdapter(BaseAdapter):
         return self.parse_date(self.data['release_date'])
 
     def get_backdrop_url(self):
-        return self.__get_image_url(self.data['backdrop_path'])
+        return self._get_image_url(self.data['backdrop_path'])
 
     def get_mobile_backdrop_url(self):
-        return self.__get_image_url(self.data['backdrop_path'], size='w1280')
+        return self._get_image_url(self.data['backdrop_path'], size='w1280')
 
     def get_poster_url(self):
-        return self.__get_image_url(self.data['poster_path'], size='w780')
+        return self._get_image_url(self.data['poster_path'], size='w780')
 
     def get_mobile_poster_url(self):
-        return self.__get_image_url(self.data['poster_path'], size='w432')
+        return self._get_image_url(self.data['poster_path'], size='w432')
 
     def get_trailer_url(self):
         raise self.AdapterMethodError(
@@ -105,9 +118,53 @@ class TmdbAdapter(BaseAdapter):
     def get_similar_movies(self):
         logger.debug('Making additional request to TMDB for similar movies')
 
-        similar = self.movie.similar_movies()
+        similar = self.tmdb_object.similar_movies()
         return map(SimilarMovie, similar['results'][:10])
 
-    def __get_image_url(self, path, size='original'):
-        base = self.config['images']['secure_base_url']
-        return urljoin(urljoin(base, size), path)
+
+class TmdbPersonAdapter(BasePersonAdapter, BaseTmdbAdapter):
+    tmdb_class = tmdb.People
+
+    def get_tmdb_id(self):
+        return self.data['id']
+
+    def get_name(self):
+        return self.data['name']
+
+    def get_profile_picture_url(self):
+        return self._get_image_url(self.data['profile_path'], size='h632')
+
+    def get_biography(self):
+        return self.data['biography']
+
+    def get_day_of_birth(self):
+        return self.parse_date(self.data.get('birthday'))
+
+    def get_day_of_death(self):
+        return self.parse_date(self.data.get('deathday'))
+
+    def get_homepage(self):
+        return self.data.get('homepage')
+
+    def get_birthplace(self):
+        return self.data.get('place_of_birth')
+
+    def get_aliases(self):
+        return self.data['also_known_as']
+
+
+class TmdbMovieCastAdapter(BaseMovieCastAdapter):
+    person_adapter_cls = TmdbPersonAdapter
+
+    def __init__(self, tmdb_movie_id):
+        self.movie = tmdb.Movies(tmdb_movie_id)
+        self.cast = self.movie.credits()['cast']
+
+    def get_members(self):
+        for member in self.cast:
+            yield CastMember(
+                id=member['cast_id'],
+                person_id=member['id'],
+                character_name=member['character'],
+                order=member['order'],
+            )
