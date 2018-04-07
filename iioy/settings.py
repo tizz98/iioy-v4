@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     # third party
+    'django_extensions',
 
     # local
     'iioy.movies',
@@ -115,3 +116,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# External keys
+TMDB_API_KEY = env('TMDB_API_KEY')
