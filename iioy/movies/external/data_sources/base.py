@@ -34,7 +34,7 @@ MovieRating = SmartTuple('MovieRating', [
     'source',
     'value',
 ])
-GenreMovie = SmartTuple('SimpleMovie', [
+TmdbMovie = SmartTuple('TmdbMovie', [
     'tmdb_id',
     'title',
     'release_date',

@@ -8,7 +8,7 @@ from iioy.movies.external.data_sources.base import (
     BaseMovieAdapter, Genre, SimpleMovie, CastMember,
     BasePersonAdapter, BaseMovieCastAdapter, BaseMovieListAdapter, ListMovie,
     BaseGenreAdapter,
-    GenreMovie)
+    TmdbMovie)
 
 logger = logging.getLogger(__name__)
 
@@ -139,7 +139,7 @@ class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
         for result in search.movie(query=query)['results']:
             poster_path = result['poster_path']
 
-            yield SimpleMovie(
+            yield TmdbMovie(
                 release_date=self.parse_date(result.pop('release_date')),
                 poster_url=self._get_poster_url(poster_path),
                 mobile_poster_url=self._get_mobile_poster_url(poster_path),
@@ -242,7 +242,7 @@ class TmdbGenreAdapter(BaseTmdbAdapter, BaseGenreAdapter):
         for data in self.tmdb_object.movies()['results']:
             poster_path = data['poster_path']
 
-            yield GenreMovie(
+            yield TmdbMovie(
                 tmdb_id=data['id'],
                 release_date=self.parse_date(data.pop('release_date')),
                 poster_url=self._get_poster_url(poster_path),
