@@ -1,15 +1,3 @@
-.heading {
-    height: 300px;
-}
-
-.poster {
-    max-width: 300px;
-}
-
-.poster_container {
-    margin-top: 2rem;
-}
-
-.poster_container > div {
-    cursor: pointer;
+.main {
+    min-height: 100%;
 }

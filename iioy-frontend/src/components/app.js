@@ -2,6 +2,7 @@ import { h, component } from 'fpreact';
 import { Router } from 'preact-router';
 
 import Header from './header';
+import Footer from './footer';
 import Home from '../routes/home';
 import Movies from '../routes/movies';
 import MovieList from '../routes/lists';
@@ -37,6 +38,7 @@ const App = component({
 					<Movies path="/movies/:id/:slug" />
 					<MovieList path="/lists/:slug" />
 				</Router>
+				<Footer />
 			</div>
 		);
 	},

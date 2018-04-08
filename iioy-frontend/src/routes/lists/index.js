@@ -2,6 +2,7 @@ import { h, component } from 'fpreact';
 import { route } from 'preact-router';
 import { Container } from 'mdbreact';
 import Title from '../../components/title';
+import TitleHeader from '../../components/title-header';
 import MovieList from '../../components/movies/list';
 import { BASE_URL } from '../../api';
 import style from './style';
@@ -50,15 +51,9 @@ export default component({
 
     view({ slug, data, error, name }, dispatch) {
         return (
-            <div>
+            <div className={ style.main }>
                 <Title title={ name } />
-
-                <div className={ `${style.heading} deep-purple` }>
-                    <Container className="d-flex justify-content-center align-items-center" style={ { height: '300px' } }>
-                        <h1 className="text-center align-self-center white-text">{ name }</h1>
-                    </Container>
-                </div>
-
+                <TitleHeader text={ name } />
                 <MovieList movies={ data && data.movies } />
             </div>
         );
