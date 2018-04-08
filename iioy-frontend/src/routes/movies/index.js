@@ -44,6 +44,7 @@ const Movie = component({
             id: matches.id,
             slug: matches.slug || '',
             title: matches.slug || '',
+            data: null,
         });
         dispatch(Msg.getData)();
     },
@@ -166,14 +167,14 @@ const Movie = component({
                                     data.budget > 0 &&
                                     <tr>
                                         <td>Budget</td>
-                                        <td>{ formatMoney(data.budget) }</td>
+                                        <td>{ formatMoney(data.budget, { precision: 0 }) }</td>
                                     </tr>
                                 }
                                 {
                                     data.revenue > 0 &&
                                     <tr>
                                         <td>Revenue</td>
-                                        <td>{ formatMoney(data.revenue) }</td>
+                                        <td>{ formatMoney(data.revenue, { precision: 0 }) }</td>
                                     </tr>
                                 }
                             </tbody>
