@@ -4,6 +4,7 @@ import { Router } from 'preact-router';
 import Header from './header';
 import Footer from './footer';
 import Home from '../routes/home';
+import About from '../routes/about';
 import Movies from '../routes/movies';
 import MovieList from '../routes/lists';
 
@@ -34,6 +35,7 @@ const App = component({
 				<Header />
 				<Router onChange={ dispatch(Msg.updateUrl) }>
 					<Home path="/" />
+					<About path="/about" />
 					<Movies path="/movies/:id" />
 					<Movies path="/movies/:id/:slug" />
 					<MovieList path="/lists/:slug" />
