@@ -5,10 +5,10 @@ import tmdbsimple as tmdb
 
 from iioy.core.adapters import UnImplementableMethod
 from iioy.movies.external.data_sources.base import (
-    BaseMovieAdapter, Genre, SimilarMovie,
-    CastMember,
+    BaseMovieAdapter, Genre, SimpleMovie, CastMember,
     BasePersonAdapter, BaseMovieCastAdapter, BaseMovieListAdapter, ListMovie,
-    SearchResult)
+    BaseGenreAdapter,
+    GenreMovie)
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +43,12 @@ class BaseTmdbAdapter:
         base = self.config['images']['secure_base_url']
         full_path = f'{size}/{path}'
         return urljoin(base, full_path)
+
+    def _get_poster_url(self, path):
+        return self._get_image_url(path, size='w780')
+
+    def _get_mobile_poster_url(self, path):
+        return self._get_image_url(path, size='w432')
 
 
 class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
@@ -90,10 +96,10 @@ class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
         return self._get_image_url(self.data['backdrop_path'], size='w1280')
 
     def get_poster_url(self):
-        return self.__get_poster_url(self.data['poster_path'])
+        return self._get_poster_url(self.data['poster_path'])
 
     def get_mobile_poster_url(self):
-        return self.__get_mobile_poster_url(self.data['poster_path'])
+        return self._get_mobile_poster_url(self.data['poster_path'])
 
     def get_trailer_url(self):
         logger.debug('Making additional request to TMDB for trailers.')
@@ -119,10 +125,10 @@ class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
         for data in self.tmdb_object.similar_movies()['results'][:10]:
             poster_path = data['poster_path']
 
-            yield SimilarMovie(
+            yield SimpleMovie(
                 release_date=self.parse_date(data.pop('release_date')),
-                poster_url=self.__get_poster_url(poster_path),
-                mobile_poster_url=self.__get_mobile_poster_url(poster_path),
+                poster_url=self._get_poster_url(poster_path),
+                mobile_poster_url=self._get_mobile_poster_url(poster_path),
                 **data,
             )
             self._queue_data_retrieval(data['id'])
@@ -133,20 +139,14 @@ class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
         for result in search.movie(query=query)['results']:
             poster_path = result['poster_path']
 
-            yield SearchResult(
+            yield SimpleMovie(
                 release_date=self.parse_date(result.pop('release_date')),
-                poster_url=self.__get_poster_url(poster_path),
-                mobile_poster_url=self.__get_mobile_poster_url(poster_path),
+                poster_url=self._get_poster_url(poster_path),
+                mobile_poster_url=self._get_mobile_poster_url(poster_path),
                 tmdb_id=result['id'],
                 **result
             )
             self._queue_data_retrieval(result['id'])
-
-    def __get_poster_url(self, path):
-        return self._get_image_url(path, size='w780')
-
-    def __get_mobile_poster_url(self, path):
-        return self._get_image_url(path, size='w432')
 
 
 class TmdbPersonAdapter(BasePersonAdapter, BaseTmdbAdapter):
@@ -229,3 +229,24 @@ class TopRatedListAdapter(TmdbMovieListAdapter):
 class UpcomingListAdapter(TmdbMovieListAdapter):
     list_func = 'upcoming'
     name = 'Upcoming'
+
+
+class TmdbGenreAdapter(BaseTmdbAdapter, BaseGenreAdapter):
+    tmdb_class = tmdb.Genres
+
+    def get_genres(self):
+        for data in self.tmdb_object.movie_list()['genres']:
+            yield Genre(**data)
+
+    def get_movies(self):
+        for data in self.tmdb_object.movies()['results']:
+            poster_path = data['poster_path']
+
+            yield GenreMovie(
+                tmdb_id=data['id'],
+                release_date=self.parse_date(data.pop('release_date')),
+                poster_url=self._get_poster_url(poster_path),
+                mobile_poster_url=self._get_mobile_poster_url(poster_path),
+                **data,
+            )
+            self._queue_data_retrieval(data['id'])

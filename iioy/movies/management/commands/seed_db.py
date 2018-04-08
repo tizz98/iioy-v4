@@ -1,6 +1,8 @@
 from django.core.management import BaseCommand
 
 from iioy.movies.external.data_sources.base import ListAdapterMeta
+from iioy.movies.external.data_sources.tmdb import TmdbGenreAdapter
+from iioy.movies.external.genres import GenreInterface
 from iioy.movies.external.lists import ListInterface
 
 
@@ -16,3 +18,7 @@ class Command(BaseCommand):
 
                 movie_list = ListInterface(list_source, name)
                 movie_list.save()
+
+        print('Creating Genres')
+        interface = GenreInterface(TmdbGenreAdapter, None)
+        interface.save_genres()

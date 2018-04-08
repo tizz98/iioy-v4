@@ -11,4 +11,7 @@ urlpatterns = [
     path('movies/search/',
          api_views.MovieSearchApi.as_view(),
          name='movie-search'),
+    path('genres/<int:tmdb_id>/',
+         api_views.MovieGenreApi.as_view(),
+         name='genre-detail'),
 ] + router.urls

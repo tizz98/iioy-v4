@@ -7,6 +7,7 @@ import Home from '../routes/home';
 import About from '../routes/about';
 import Movies from '../routes/movies';
 import MovieList from '../routes/lists';
+import Genre from '../routes/genres';
 
 if (module.hot) {
 	require('preact/debug');
@@ -39,6 +40,7 @@ const App = component({
 					<Movies path="/movies/:id" />
 					<Movies path="/movies/:id/:slug" />
 					<MovieList path="/lists/:slug" />
+					<Genre path="/genres/:id" />
 				</Router>
 				<Footer />
 			</div>

@@ -45,6 +45,7 @@ const Movie = component({
             slug: matches.slug || '',
             title: matches.slug || '',
             data: null,
+            error: null,
         });
         dispatch(Msg.getData)();
     },

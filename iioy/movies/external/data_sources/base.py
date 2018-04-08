@@ -10,7 +10,7 @@ Genre = SmartTuple('Genre', [
     'id',
     'name'
 ])
-SimilarMovie = SmartTuple('SimilarMovie', [
+SimpleMovie = SmartTuple('SimpleMovie', [
     'id',
     'title',
     'release_date',
@@ -34,7 +34,7 @@ MovieRating = SmartTuple('MovieRating', [
     'source',
     'value',
 ])
-SearchResult = SmartTuple('SearchResult', [
+GenreMovie = SmartTuple('SimpleMovie', [
     'tmdb_id',
     'title',
     'release_date',
@@ -217,3 +217,17 @@ class BaseMovieListAdapter(BaseAdapter, metaclass=ListAdapterMeta):
     @abc.abstractmethod
     def get_movies(self):
         pass
+
+
+class BaseGenreAdapter(BaseAdapter):
+    @abc.abstractmethod
+    def get_genres(self):
+        pass
+
+    @abc.abstractmethod
+    def get_movies(self):
+        pass
+
+    @staticmethod
+    def _queue_data_retrieval(tmdb_id):
+        transaction.on_commit(lambda: tasks.update_movie(tmdb_id))

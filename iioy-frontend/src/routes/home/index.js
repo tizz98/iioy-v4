@@ -19,8 +19,7 @@ const Msg = {
 	setSearchTerm: 0,
 	setSearchActive: 1,
 	setSearchInactive: 2,
-	getSearchResults: 3,
-	setSearchResults: 4,
+	setSearchResults: 3,
 };
 const searchMovies = query => (
 	dispatch => (
@@ -58,7 +57,6 @@ export default component({
 	},
 
 	view(model, dispatch) {
-		console.log(model.searchTerm)
 		return (
 			<div class={style.home}>
 				<Title />

@@ -11,9 +11,11 @@ from iioy.movies.api.serializers import (
     SimpleMovieListSerializer, DetailedMovieListSerializer
 )
 from iioy.movies.external.data_sources import TmdbMovieAdapter
+from iioy.movies.external.data_sources.tmdb import TmdbGenreAdapter
 from iioy.movies.external.errors import NoDataFoundError
+from iioy.movies.external.genres import GenreInterface
 from iioy.movies.external.movies import MovieInterface
-from iioy.movies.models import Movie, MovieList
+from iioy.movies.models import Movie, MovieList, Genre
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +50,40 @@ class MovieViewInterface:
         return self.interface.save()
 
 
+class GenreViewInterface:
+    movies_to_show = 20
+    adapter_cls = TmdbGenreAdapter
+
+    def __init__(self, tmdb_id):
+        self.tmdb_id = tmdb_id
+        self.interface = GenreInterface(self.adapter_cls, self.tmdb_id)
+
+    def get_movies(self):
+        try:
+            if self.__get_movies().count() < self.movies_to_show:
+                return self.interface.get_movies()
+            return self.__get_movies().order_by('?')[:self.movies_to_show]
+        except Genre.DoesNotExist:
+            return self.interface.get_movies()
+
+    def get_name(self):
+        try:
+            return self.__get_name()
+        except Genre.DoesNotExist:
+            self.interface.save_genres()
+            return self.__get_name()
+
+    def __get_name(self):
+        genre = self.__get_genre()
+        return genre.name
+
+    def __get_genre(self):
+        return Genre.objects.get(tmdb_id=self.tmdb_id)
+
+    def __get_movies(self):
+        return self.__get_genre().movies.all()
+
+
 class MovieViewSet(GenericViewSet, mixins.RetrieveModelMixin):
     permission_classes = (AllowAny,)
     serializer_class = MovieSerializer
@@ -71,6 +107,21 @@ class MovieSearchApi(APIView):
         interface = MovieViewInterface(query=query)
         serializer = SimpleMovieSerializer(interface.search(), many=True)
         return response.Response(data=serializer.data)
+
+
+class MovieGenreApi(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, *args, **kwargs):
+        genre_id = self.kwargs['tmdb_id']
+        interface = GenreViewInterface(genre_id)
+        serializer = SimpleMovieSerializer(interface.get_movies(), many=True)
+
+        return response.Response(data={
+            'id': genre_id,
+            'name': interface.get_name(),
+            'movies': serializer.data,
+        })
 
 
 class MovieListViewSet(
