@@ -72,6 +72,7 @@ class MovieListViewSet(
     mixins.ListModelMixin
 ):
     permission_classes = (AllowAny,)
+    lookup_field = 'slug'
     queryset = MovieList.objects.all().order_by('name')
 
     def get_serializer_class(self):

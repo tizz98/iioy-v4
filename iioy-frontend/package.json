@@ -27,11 +27,17 @@
     "preact-render-spy": "^1.2.1"
   },
   "dependencies": {
+    "@fortawesome/fontawesome": "^1.1.5",
+    "@fortawesome/fontawesome-free-solid": "^5.0.9",
+    "@fortawesome/react-fontawesome": "^0.0.18",
+    "bootstrap": "4.0.0",
     "fpreact": "^0.2.1",
     "mdbreact": "^4.2.0",
     "preact": "^8.2.6",
     "preact-compat": "^3.17.0",
-    "preact-router": "^2.5.7"
+    "preact-helmet": "^4.0.0-alpha-3",
+    "preact-router": "^2.5.7",
+    "react-error-overlay": "4.0.0"
   },
   "jest": {
     "verbose": true,

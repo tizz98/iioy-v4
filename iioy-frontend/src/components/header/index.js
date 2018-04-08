@@ -1,18 +1,36 @@
-import { h, Component } from 'preact';
-import { Link } from 'preact-router/match';
+import { h, component } from 'fpreact';
+import { Navbar, NavbarBrand, NavbarNav } from 'mdbreact';
+import HeaderItem from './item';
 import style from './style';
 
-export default class Header extends Component {
-	render() {
+const Header = component({
+	update(model, msg) {
+		return model;
+	},
+
+	view(model, dispatch) {
 		return (
-			<header class={style.header}>
-				<h1>Preact App</h1>
-				<nav>
-					<Link activeClassName={style.active} href="/">Home</Link>
-					<Link activeClassName={style.active} href="/profile">Me</Link>
-					<Link activeClassName={style.active} href="/profile/john">John</Link>
-				</nav>
-			</header>
+			<Navbar color="light-blue" dark expand="md">
+				<NavbarBrand href="/">
+					IIOY
+				</NavbarBrand>
+				<NavbarNav right>
+					<HeaderItem path="/lists/now-playing">
+						Now playing
+					</HeaderItem>
+					<HeaderItem path="/lists/upcoming">
+						Upcoming
+					</HeaderItem>
+					<HeaderItem path="/lists/popular">
+						Popular
+					</HeaderItem>
+					<HeaderItem path="/lists/top-rated">
+						Top rated
+					</HeaderItem>
+				</NavbarNav>
+			</Navbar>
 		);
-	}
-}
+	},
+});
+
+export default Header;

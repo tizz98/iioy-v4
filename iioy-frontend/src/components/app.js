@@ -1,35 +1,45 @@
-import { h, Component } from 'preact';
+import { h, component } from 'fpreact';
 import { Router } from 'preact-router';
 
 import Header from './header';
 import Home from '../routes/home';
-import Profile from '../routes/profile';
-// import Home from 'async!../routes/home';
-// import Profile from 'async!../routes/profile';
+import Movies from '../routes/movies';
+import MovieList from '../routes/lists';
 
 if (module.hot) {
 	require('preact/debug');
 }
 
-export default class App extends Component {
-	/** Gets fired when the route changes.
-	 *	@param {Object} event		"change" event from [preact-router](http://git.io/preact-router)
-	 *	@param {string} event.url	The newly routed URL
-	 */
-	handleRoute = e => {
-		this.currentUrl = e.url;
-	};
+const initialModel = {
+	currentUrl: null,
+};
+const Msg = {
+	updateUrl: 0,
+};
 
-	render() {
+const App = component({
+	update(model = initialModel, msg) {
+		switch (msg.kind) {
+			case Msg.updateUrl:
+				return { ...model, currentUrl: msg.value.url };
+		}
+
+		return model;
+	},
+
+	view(model, dispatch) {
 		return (
 			<div id="app">
 				<Header />
-				<Router onChange={this.handleRoute}>
+				<Router onChange={ dispatch(Msg.updateUrl) }>
 					<Home path="/" />
-					<Profile path="/profile/" user="me" />
-					<Profile path="/profile/:user" />
+					<Movies path="/movies/:id" />
+					<Movies path="/movies/:id/:slug" />
+					<MovieList path="/lists/:slug" />
 				</Router>
 			</div>
 		);
-	}
-}
+	},
+});
+
+export default App;
