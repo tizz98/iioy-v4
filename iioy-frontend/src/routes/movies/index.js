@@ -79,7 +79,7 @@ const Movie = component({
                 <Title title={ title } />
                 <TitleHeader
                     text=""
-                    height="500px"
+                    height={ data ? data.backdrop_url ? "500px" : "300px" : "500px" }
                     color={ COLORS.blue }
                     backgroundImage={ data && data.backdrop_url }
                 />
@@ -129,8 +129,10 @@ const Movie = component({
                         </Col>
                     </Row>
 
-                    <Header>Plot</Header>
-                    <p>{ data.synopsis }</p>
+                    <Display when={ data.synopsis }>
+                        <Header>Plot</Header>
+                        <p>{ data.synopsis }</p>
+                    </Display>
 
                     <Display when={ data.ratings && data.ratings.length > 0 }>
                         <Header>Ratings</Header>

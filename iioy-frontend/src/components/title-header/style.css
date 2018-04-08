@@ -20,3 +20,8 @@
     background: -webkit-linear-gradient( 135deg, #81FBB8 10%, #28C76F 100%);
     background: linear-gradient( 135deg, #81FBB8 10%, #28C76F 100%);
 }
+
+.violet_gradient {
+    background: -webkit-linear-gradient( 135deg, #43CBFF 10%, #9708CC 100%);
+    background: linear-gradient( 135deg, #43CBFF 10%, #9708CC 100%);
+}
