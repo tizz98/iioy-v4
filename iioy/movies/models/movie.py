@@ -45,3 +45,10 @@ class Movie(BaseTmdbModel):
 
     def __str__(self):
         return self.title
+
+    def is_missing_data(self):
+        return (
+            self.synopsis is None
+            or self.runtime is None
+            or self.backdrop_url is None
+        )

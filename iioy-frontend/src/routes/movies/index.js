@@ -158,19 +158,27 @@ const Movie = component({
                         <Video src={ data.trailer_url } />
                     </Display>
 
-                    <Header>Money</Header>
-                    <table className="table table-sm">
-                        <tbody>
-                            <tr>
-                                <td>Budget</td>
-                                <td>{ formatMoney(data.budget) }</td>
-                            </tr>
-                            <tr>
-                                <td>Revenue</td>
-                                <td>{ formatMoney(data.revenue) }</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <Display when={ data.budget > 0 || data.revenue > 0 }>
+                        <Header>Money</Header>
+                        <table className="table table-sm">
+                            <tbody>
+                                {
+                                    data.budget > 0 &&
+                                    <tr>
+                                        <td>Budget</td>
+                                        <td>{ formatMoney(data.budget) }</td>
+                                    </tr>
+                                }
+                                {
+                                    data.revenue > 0 &&
+                                    <tr>
+                                        <td>Revenue</td>
+                                        <td>{ formatMoney(data.revenue) }</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </Display>
 
                     <Display when={ hasSimilarMovies }>
                         <Header>Similar movies</Header>

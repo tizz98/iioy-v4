@@ -28,10 +28,14 @@ class MovieViewInterface:
 
     def get_movie(self):
         try:
-            return Movie.objects.get(tmdb_id=self.tmdb_id)
+            movie = Movie.objects.get(tmdb_id=self.tmdb_id)
+
+            if movie.is_missing_data():
+                return self.__save()
+            return movie
         except Movie.DoesNotExist:
             try:
-                return self.interface.save()
+                return self.__save()
             except NoDataFoundError as err:
                 logger.exception(f'Error finding {self.tmdb_id}',
                                  exc_info=err)
@@ -39,6 +43,9 @@ class MovieViewInterface:
 
     def search(self):
         return self.interface.search(self.query)
+
+    def __save(self):
+        return self.interface.save()
 
 
 class MovieViewSet(GenericViewSet, mixins.RetrieveModelMixin):
