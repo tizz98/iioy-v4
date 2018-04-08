@@ -1,11 +1,22 @@
+/*
+    use https://webkul.github.io/coolhue/ for inspiration.
+*/
 .purple_gradient {
+    background: -webkit-linear-gradient(50deg,#ff6ec4,#7873f5);
     background: linear-gradient(40deg, #ff6ec4, #7873f5);
 }
 
 .peach_gradient {
+    background: -webkit-linear-gradient(50deg,#ffd86f,#fc6262);
     background: linear-gradient(40deg, #ffd86f, #fc6262);
 }
 
 .blue_gradient {
+    background: -webkit-linear-gradient(50deg,#45cafc,#303f9f);
     background: linear-gradient(40deg, #45cafc, #303f9f);
+}
+
+.green_gradient {
+    background: -webkit-linear-gradient( 135deg, #81FBB8 10%, #28C76F 100%);
+    background: linear-gradient( 135deg, #81FBB8 10%, #28C76F 100%);
 }

@@ -6,6 +6,7 @@ export const COLORS = {
     purple: 'purple_gradient',
     peach: 'peach_gradient',
     blue: 'blue_gradient',
+    green: 'green_gradient',
 };
 export default ({ text, color = COLORS.purple, height = '300px' }) => (
     <div className={ style[color] }  style={ { height } }>
