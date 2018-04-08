@@ -49,7 +49,7 @@ export default component({
         return model;
     },
 
-    view({ slug, data, error, name }, dispatch) {
+    view({ slug, data, name }, dispatch) {
         return (
             <div className={ style.main }>
                 <Title title={ name } />
