@@ -13,7 +13,7 @@ SECRET_KEY = env('SECRET_KEY', default='s&d2wyg@(p3jf1d&-1e!9az55_!j)_vbfu62_#x$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
 
 # Application definition
@@ -125,3 +125,10 @@ OMDB_API_KEY = env('OMDB_API_KEY')
 CORS_ORIGIN_WHITELIST = [
     'localhost:8080',
 ]
+
+# DRF
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+}
