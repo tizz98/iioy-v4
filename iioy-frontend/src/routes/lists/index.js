@@ -31,7 +31,7 @@ const getListData = slug => (
 export default component({
     props({ matches }, dispatch) {
         dispatch(Msg.setSlug)(matches.slug);
-        dispatch(Msg.getData)(matches.slug);
+        dispatch(Msg.getData)();
     },
 
     update(model = initialModel, msg) {
