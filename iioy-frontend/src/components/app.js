@@ -8,6 +8,7 @@ import About from '../routes/about';
 import Movies from '../routes/movies';
 import MovieList from '../routes/lists';
 import Genre from '../routes/genres';
+import Legal from '../routes/legal';
 
 if (module.hot) {
 	require('preact/debug');
@@ -37,6 +38,7 @@ const App = component({
 				<Router onChange={ dispatch(Msg.updateUrl) }>
 					<Home path="/" />
 					<About path="/about" />
+					<Legal path="/legal" />
 					<Movies path="/movies/:id" />
 					<Movies path="/movies/:id/:slug" />
 					<MovieList path="/lists/:slug" />

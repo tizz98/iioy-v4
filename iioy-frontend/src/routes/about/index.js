@@ -25,7 +25,7 @@ export default () => (
 
         <Container>
             <p className="mt-3">
-                Is It Out Yet (or "IIOY" for short) is a one stop sthop to see
+                Is It Out Yet (or "IIOY" for short) is a one stop shop to see
                 if your favorite movie is out yet.
             </p>
             <p>
