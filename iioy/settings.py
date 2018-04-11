@@ -124,7 +124,7 @@ OMDB_API_KEY = env('OMDB_API_KEY')
 # CORS
 CORS_ORIGIN_WHITELIST = [
     'localhost:8080',
-]
+] + env.list('CORS_WHITELIST', default=[])
 
 # DRF
 REST_FRAMEWORK = {

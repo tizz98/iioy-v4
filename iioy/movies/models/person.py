@@ -6,7 +6,7 @@ from iioy.core.models import BaseTmdbModel
 
 class Person(BaseTmdbModel):
     name = models.TextField()
-    profile_picture_url = models.URLField()
+    profile_picture_url = models.URLField(null=True)
     biography = models.TextField(null=True)
 
     day_of_birth = models.DateField(null=True)

@@ -105,18 +105,19 @@ const Movie = component({
 
                 <Container>
                     <Row>
-                        <Col xs="12" lg="3">
+                        <Col xs="12" lg="4" xl="3">
                             <PosterImage
                                 poster_url={ data.poster_url }
                                 title={ data.title }
                                 style={ { marginTop: '-250px' } }
-                                className="hoverable"
+                                maxWidth="100%"
+                                className="hoverable img-fluid"
                             />
                         </Col>
-                        <Col xs="12" lg="9">
+                        <Col xs="12" lg="8" xl="9">
                             <div className={ style.movie_info }>
                                 <h2 className="h2-responsive">{ data.title }</h2>
-                                <p>{ releaseDate.format('LL') }</p>
+                                <p className="mb-2">{ releaseDate.format('LL') }</p>
                                 {
                                     data.genres.map(genre => (
                                         <Bubble
