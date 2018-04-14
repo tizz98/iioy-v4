@@ -1,1 +1,1 @@
-export const BASE_URL = "http://0.0.0.0:8000/api/";
+export const BASE_URL = "https://iioy-api.zumh.org/api/";

@@ -36,10 +36,11 @@ export default () => (
             </p>
             <p>
                 IIOY is a <a href="http://zumh.org" target="_blank" rel="noreferrer noopener">ZUMH</a> project;
-                this is the fourth major iteration fo the website.
+                this is the fourth major iteration fo the website. Read about why this site is rewritten every
+                couple years <a href="https://medium.com/@daetam/being-a-better-programmer-917ede778206" target="_blank" rel="noreferrer noopener">here &rsaquo;</a>
             </p>
 
-            <h3 className="h3-responsive mt-3">Credits:</h3>
+            <h3 className="h3-responsive mt-3">Credits</h3>
             <p>I would like to thank a couple projects that without them, this website wouldn't be possible.</p>
 
             <ul className={ style.unstyled_list }>
