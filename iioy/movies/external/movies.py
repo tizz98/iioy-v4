@@ -49,7 +49,8 @@ class MovieInterface(AdapterInterface):
     search = AdapterMethod(default=list)
 
     def save(self):
-        movie = Movie.objects.update_or_create(**self.get_movie_data())
+        data = self.get_movie_data()
+        movie = Movie.objects.update_or_create(**data)
 
         self.__set_genres(movie)
         self.__set_similar_movies(movie)
@@ -94,11 +95,16 @@ class MovieInterface(AdapterInterface):
 
     def __set_genres(self, movie: 'Movie'):
         genres = []
+
         for genre_data in self.get_genres():
-            genres.append(Genre.objects.update_or_create(
-                tmdb_id=genre_data.id,
-                name=genre_data.name,
-            ))
+            try:
+                genres.append(Genre.objects.get(tmdb_id=genre_data.id))
+            except Genre.DoesNotExist:
+                pass
+            except Genre.MultipleObjectsReturned:
+                genres.append(Genre.objects.filter(
+                    tmdb_id=genre_data.id,
+                ).latest('created'))
 
         if genres:
             movie.genres.set(genres, clear=True)

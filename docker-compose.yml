@@ -3,16 +3,36 @@ version: '3'
 services:
   db:
     image: postgres
+  cache:
+    image: redis
   web:
     build: .
-    command: bash -c "python3 manage.py migrate && gunicorn iioy.wsgi:application -b :8000"
+    command: bash -c "python3 manage.py migrate && gunicorn iioy.wsgi:application -b :8000 -w 4 -k 'gevent'"
     environment:
+      BROKER_URL: redis://cache:6379/0
+      RESULT_BACKEND: redis://cache:6379/0
       DEBUG: 'true'
       DATABASE_URL: 'psql://postgres@db:5432/postgres'
       TMDB_API_KEY: "${TMDB_API_KEY}"
       OMDB_API_KEY: "${OMDB_API_KEY}"
       ALLOWED_HOSTS: "${ALLOWED_HOSTS}"
+      SECRET_KEY: "${SECRET_KEY}"
     ports:
       - "8000:8000"
     depends_on:
       - db
+      - cache
+  worker:
+    build: .
+    command: bash -c "celery -A iioy worker -l info -B"
+    environment:
+      BROKER_URL: redis://cache:6379/0
+      RESULT_BACKEND: redis://cache:6379/0
+      DEBUG: 'true'
+      DATABASE_URL: 'psql://postgres@db:5432/postgres'
+      TMDB_API_KEY: "${TMDB_API_KEY}"
+      OMDB_API_KEY: "${OMDB_API_KEY}"
+      ALLOWED_HOSTS: "${ALLOWED_HOSTS}"
+      SECRET_KEY: "${SECRET_KEY}"
+    depends_on:
+      - cache

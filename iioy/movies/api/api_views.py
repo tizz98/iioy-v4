@@ -34,20 +34,21 @@ class MovieViewInterface:
 
             if movie.is_missing_data():
                 return self.__save()
+
             return movie
         except Movie.DoesNotExist:
-            try:
-                return self.__save()
-            except NoDataFoundError as err:
-                logger.exception(f'Error finding {self.tmdb_id}',
-                                 exc_info=err)
-                raise Http404(f'Cannot find {self.tmdb_id}')
+            return self.__save()
 
     def search(self):
         return self.interface.search(self.query)
 
     def __save(self):
-        return self.interface.save()
+        try:
+            return self.interface.save()
+        except NoDataFoundError as err:
+            logger.exception(f'Error finding {self.tmdb_id}',
+                             exc_info=err)
+            raise Http404(f'Cannot find {self.tmdb_id}')
 
 
 class GenreViewInterface:

@@ -9,6 +9,8 @@ client = omdb.OMDBClient(apikey=settings.OMDB_API_KEY)
 
 
 class OmdbMovieAdapter(BaseMovieAdapter):
+    source = 'omdb'
+
     """
     NB: The OMDB api has many of these fields, but we rely on TMDB as the
     source of truth and only use OMDB as supplemental.

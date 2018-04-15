@@ -3,7 +3,7 @@ import logging
 from typing import Type
 
 from iioy.movies.external.data_sources.base import BaseAdapter
-
+from iioy.movies.external.errors import HardError
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +76,8 @@ class AdapterMethod(InterfaceMethod):
             logger.debug(f'Error calling method `{self.attname}`',
                          exc_info=err)
             return self.default
+        except HardError as e:
+            raise e
         except Exception as e:
             logger.exception(f'Error calling method `{self.attname}`',
                              exc_info=e)

@@ -20,6 +20,7 @@ const initialModel = {
     id: null,
     slug: null,
     title: null,
+    isLoading: false,
 };
 const Msg = {
     setProps: 0,
@@ -56,11 +57,18 @@ const Movie = component({
                 return { ...model, ...msg.value };
             case Msg.setData:
                 if (msg.error) {
-                    return { ...model, error: msg.error };
+                    return { ...model, error: msg.error, isLoading: false };
                 }
-                return { ...model, data: msg.value, title: msg.value.title };
+                return { ...model, data: msg.value, title: msg.value.title, isLoading: false };
             case Msg.getData:
-                return [model, getMovieData(model.id)];
+                if (model.isLoading) {
+                    return model;
+                }
+
+                return [{
+                    ...model,
+                    isLoading: true,
+                }, getMovieData(model.id)];
         }
 
         return model;
@@ -73,6 +81,7 @@ const Movie = component({
             id,
             slug,
             title,
+            isLoading,
         } = model;
 
         const head = (
@@ -87,7 +96,7 @@ const Movie = component({
             </div>
         );
 
-        if (!data) {
+        if (isLoading) {
             return (
                 <div className={ style.main }>
                     { head }

@@ -10,6 +10,7 @@ const initialModel = {
     data: null,
     id: null,
     name: null,
+    isLoading: false,
 };
 const Msg = {
     setProps: 0,
@@ -42,11 +43,18 @@ export default component({
                 return { ...model, ...msg.value };
             case Msg.setData:
                 if (msg.error) {
-                    return { ...model, error: msg.error };
+                    return { ...model, error: msg.error, isLoading: false };
                 }
-                return { ...model, data: msg.value, name: msg.value.name };
+                return { ...model, data: msg.value, name: msg.value.name, isLoading: false };
             case Msg.getData:
-                return [model, getGenreData(model.id)];
+                if (model.isLoading) {
+                    return model;
+                }
+
+                return [{
+                    ...model,
+                    isLoading: true,
+                }, getGenreData(model.id)];
         }
 
         return model;

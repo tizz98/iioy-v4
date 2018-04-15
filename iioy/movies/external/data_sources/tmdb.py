@@ -1,14 +1,17 @@
 import logging
 from urllib.parse import urljoin
 
+import requests
 import tmdbsimple as tmdb
+from requests import HTTPError
 
 from iioy.core.adapters import UnImplementableMethod
 from iioy.movies.external.data_sources.base import (
     BaseMovieAdapter, Genre, SimpleMovie, CastMember,
     BasePersonAdapter, BaseMovieCastAdapter, BaseMovieListAdapter, ListMovie,
-    BaseGenreAdapter,
-    TmdbMovie)
+    BaseGenreAdapter, TmdbMovie,
+)
+from iioy.movies.external.errors import NotFoundHardError, HardError
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +19,7 @@ logger = logging.getLogger(__name__)
 class BaseTmdbAdapter:
     __config = {}
 
+    source = 'tmdb'
     tmdb_class = None
 
     def __init__(self, external_id):
@@ -27,7 +31,14 @@ class BaseTmdbAdapter:
     @property
     def data(self):
         if self._data is None:
-            self._data = self.tmdb_object.info()
+            try:
+                self._data = self.tmdb_object.info()
+            except HTTPError as error:
+                status_code = getattr(error.response, 'status_code')
+                if status_code == requests.codes.not_found:
+                    raise NotFoundHardError('Not found')
+                elif status_code == requests.codes.too_many_requests:
+                    raise HardError('Rate limited')
         return self._data
 
     @property
@@ -51,8 +62,9 @@ class BaseTmdbAdapter:
         return self._get_image_url(path, size='w432')
 
 
-class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
+class TmdbMovieAdapter(BaseTmdbAdapter, BaseMovieAdapter):
     tmdb_class = tmdb.Movies
+    similar_movie_limit = 10
 
     def get_title(self):
         return self.data['title']
@@ -104,8 +116,8 @@ class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
     def get_trailer_url(self):
         logger.debug('Making additional request to TMDB for trailers.')
 
-        trailers = list(filter(lambda t: t['site'].lower() == 'youtube',
-                               self.tmdb_object.videos()['results']))
+        videos = self.tmdb_object.videos()['results']
+        trailers = list(filter(lambda t: t['site'].lower() == 'youtube', videos))  # noqa: E501
 
         if len(trailers) > 0:
             trailer = trailers[0]
@@ -122,7 +134,9 @@ class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
     def get_similar_movies(self):
         logger.debug('Making additional request to TMDB for similar movies')
 
-        for data in self.tmdb_object.similar_movies()['results'][:10]:
+        movies = self.tmdb_object.similar_movies()['results']
+
+        for data in movies[:self.similar_movie_limit]:
             poster_path = data['poster_path']
 
             yield SimpleMovie(
@@ -131,12 +145,9 @@ class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
                 mobile_poster_url=self._get_mobile_poster_url(poster_path),
                 **data,
             )
-            self._queue_data_retrieval(data['id'])
 
     def search(self, query):
-        search = tmdb.Search()
-
-        for result in search.movie(query=query)['results']:
+        for result in tmdb.Search().movie(query=query)['results']:
             poster_path = result['poster_path']
 
             yield TmdbMovie(
@@ -146,10 +157,9 @@ class TmdbMovieAdapter(BaseMovieAdapter, BaseTmdbAdapter):
                 tmdb_id=result['id'],
                 **result
             )
-            self._queue_data_retrieval(result['id'])
 
 
-class TmdbPersonAdapter(BasePersonAdapter, BaseTmdbAdapter):
+class TmdbPersonAdapter(BaseTmdbAdapter, BasePersonAdapter):
     tmdb_class = tmdb.People
 
     def get_tmdb_id(self):
@@ -180,15 +190,15 @@ class TmdbPersonAdapter(BasePersonAdapter, BaseTmdbAdapter):
         return self.data['also_known_as']
 
 
-class TmdbMovieCastAdapter(BaseMovieCastAdapter):
+class TmdbMovieCastAdapter(BaseTmdbAdapter, BaseMovieCastAdapter):
+    source = 'tmdb'
     person_adapter_cls = TmdbPersonAdapter
-
-    def __init__(self, tmdb_movie_id):
-        self.movie = tmdb.Movies(tmdb_movie_id)
-        self.cast = self.movie.credits()['cast']
+    tmdb_class = tmdb.Movies
 
     def get_members(self):
-        for member in self.cast:
+        cast = self.tmdb_object.credits()['cast']
+
+        for member in cast:
             yield CastMember(
                 id=member['cast_id'],
                 person_id=member['id'],
@@ -197,11 +207,15 @@ class TmdbMovieCastAdapter(BaseMovieCastAdapter):
             )
 
 
-class TmdbMovieListAdapter(BaseMovieListAdapter):
+class TmdbMovieListAdapter(BaseTmdbAdapter, BaseMovieListAdapter):
     source = 'tmdb'
     movie_adapter_cls = TmdbMovieAdapter
+    tmdb_class = tmdb.Movies
     name = None
     list_func = None
+
+    def __init__(self):
+        super().__init__(None)
 
     def get_name(self):
         return self.name
@@ -249,4 +263,3 @@ class TmdbGenreAdapter(BaseTmdbAdapter, BaseGenreAdapter):
                 mobile_poster_url=self._get_mobile_poster_url(poster_path),
                 **data,
             )
-            self._queue_data_retrieval(data['id'])

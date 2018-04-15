@@ -12,6 +12,7 @@ const initialModel = {
     data: null,
     name: null,
     error: null,
+    isLoading: false,
 };
 const Msg = {
     setSlug: 0,
@@ -40,11 +41,18 @@ export default component({
                 return { ...model, slug: msg.value, name: msg.value };
             case Msg.setData:
                 if (msg.error) {
-                    return { ...model, error: msg.error };
+                    return { ...model, error: msg.error, isLoading: false };
                 }
-                return { ...model, data: msg.value, name: msg.value.name };
+                return { ...model, data: msg.value, name: msg.value.name, isLoading: false };
             case Msg.getData:
-                return [model, getListData(model.slug)];
+                if (model.isLoading) {
+                    return model;
+                }
+
+                return [{
+                    ...model,
+                    isLoading: true,
+                }, getListData(model.slug)];
         }
         return model;
     },

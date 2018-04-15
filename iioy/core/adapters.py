@@ -18,6 +18,11 @@ class BaseAdapter(abc.ABC):
     def get_youtube_url(key):
         return f'https://youtube.com/embed/{key}'
 
+    @property
+    @abc.abstractmethod
+    def source(self):
+        pass
+
 
 class UnImplementableMethod:
     def __init__(self, message):

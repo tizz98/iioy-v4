@@ -1,10 +1,9 @@
 import abc
 from collections import defaultdict
 
-from django.db import transaction
 
 from iioy.core.adapters import SmartTuple, BaseAdapter
-from iioy.movies import tasks
+
 
 Genre = SmartTuple('Genre', [
     'id',
@@ -129,10 +128,6 @@ class BaseMovieAdapter(BaseAdapter):
     def search(self, query):
         pass
 
-    @staticmethod
-    def _queue_data_retrieval(tmdb_id):
-        transaction.on_commit(lambda: tasks.update_movie(tmdb_id))
-
 
 class BasePersonAdapter(BaseAdapter):
     @abc.abstractmethod
@@ -197,11 +192,6 @@ class ListAdapterMeta(abc.ABCMeta):
 class BaseMovieListAdapter(BaseAdapter, metaclass=ListAdapterMeta):
     @property
     @abc.abstractmethod
-    def source(self):
-        pass
-
-    @property
-    @abc.abstractmethod
     def name(self):
         pass
 
@@ -227,7 +217,3 @@ class BaseGenreAdapter(BaseAdapter):
     @abc.abstractmethod
     def get_movies(self):
         pass
-
-    @staticmethod
-    def _queue_data_retrieval(tmdb_id):
-        transaction.on_commit(lambda: tasks.update_movie(tmdb_id))

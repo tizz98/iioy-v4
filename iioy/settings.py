@@ -1,6 +1,6 @@
 import environ
+from celery.schedules import crontab
 
-root = environ.Path(__file__) - 3  # three folder back (/a/b/c/ - 3 = /)
 env = environ.Env(DEBUG=(bool, False),)  # set default values and casting
 environ.Env.read_env()  # reading .env file
 
@@ -45,27 +45,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'iioy.core.middleware.ZumhMiddleware',
 ]
 
 ROOT_URLCONF = 'iioy.urls'
-
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
-
 WSGI_APPLICATION = 'iioy.wsgi.application'
+APPEND_SLASH = True
 
 
 # Database
@@ -109,12 +94,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-APPEND_SLASH = True
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.0/howto/static-files/
-
-STATIC_URL = '/static/'
 
 # External keys
 TMDB_API_KEY = env('TMDB_API_KEY')
@@ -131,4 +110,32 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
     ],
+}
+
+# Celery
+CELERY_BROKER_URL = env('BROKER_URL')
+CELERY_RESULT_BACKEND = env('RESULT_BACKEND')
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TASK_RESULT_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TIMEZONE = 'UTC'
+CELERY_ENABLE_UTC = True
+CELERY_ALWAYS_EAGER = env.bool('ALWAYS_EAGER', default=False)
+CELERY_BEAT_SCHEDULE = {
+    'update_movie_lists': {
+        'task': 'iioy.movies.tasks.update_movie_lists',
+        'schedule': crontab(minute='0', hour='7', day_of_week=3),  # every wednesday, midnight PST
+    },
+    'update_genres': {
+        'task': 'iioy.movies.tasks.update_genres',
+        'schedule': crontab(minute='0', hour='7', day_of_week=1),  # every monday, midnight PST
+    },
+    'update_missing_movie_data': {
+        'task': 'iioy.movies.tasks.update_missing_data_movies',
+        'schedule': crontab(minute='0', hour='7', day_of_week=2),  # every tuesday, midnight PST
+    },
+    'update_missing_ratings': {
+        'task': 'iioy.movies.tasks.update_missing_ratings',
+        'schedule': crontab(minute='0', hour='7', day_of_week=0),  # every sunday, midnight PST
+    },
 }
