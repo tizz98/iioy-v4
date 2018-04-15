@@ -1,6 +1,6 @@
 {
-  "name": "iioy-frontend",
-  "short_name": "iioy-frontend",
+  "name": "Is It Out Yet?",
+  "short_name": "IIOY",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
