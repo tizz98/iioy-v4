@@ -6,6 +6,7 @@ import style from './style';
 import imgV1 from '../../assets/img/iioy_v1.png';
 import imgV2 from '../../assets/img/iioy_v2.png';
 import imgV3 from '../../assets/img/iioy_v3.png';
+import psf from '../../assets/img/psf.png';
 
 const Link = ({ href, name, description }) => (
     <li>
@@ -70,6 +71,9 @@ export default () => (
                     description="A personal plug, but I've been developing this website since 2013 and it continues to be a great programming exercise."
                 />
             </ul>
+
+            <p>Proud member of the <a href="https://psfmember.org/" target="_blank" rel="noopener noreferrer">Python Software Foundation</a></p>
+            <img src={ psf } style={ { maxWidth: '300px' } } className="img-fluid" alt="Python Software Foundation" />
 
             <h3 className="h3-responsive mt-3">Previous versions</h3>
             <h4 className="h4-responsive mt-3">Version 3 (2015/2016)</h4>
