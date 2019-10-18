@@ -31,7 +31,7 @@
     "@fortawesome/fontawesome-free-solid": "^5.0.9",
     "@fortawesome/react-fontawesome": "^0.0.18",
     "accounting-js": "^1.1.1",
-    "bootstrap": "4.0.0",
+    "bootstrap": "4.3.1",
     "classnames": "^2.2.5",
     "fpreact": "^0.2.1",
     "mdbreact": "^4.2.0",
